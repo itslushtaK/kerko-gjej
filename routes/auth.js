@@ -45,7 +45,7 @@ router.post("/register", async (req, res) => {
       expiresIn: "1h",
     });
 
-    const url = `http://localhost:5000/api/auth/confirm/${emailToken}`;
+    const url = `https://kerko-gjej.vercel.app/api/auth/confirm/${emailToken}`;
 
     // Send email
     await transporter.sendMail({
@@ -71,7 +71,7 @@ router.get("/confirm/:token", async (req, res) => {
 
     user.isVerified = true;
     await user.save();
-    res.redirect("http://localhost:3000/email-confirmed");
+    res.redirect("https://kerko-gjej.vercel.app/email-confirmed");
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -124,7 +124,7 @@ router.post("/forgot-password", async (req, res) => {
     });
 
     // Update reset URL to point to front-end
-    const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetUrl = `https://kerko-gjej.vercel.app/reset-password/${resetToken}`;
 
     // Send email
     await transporter.sendMail({
