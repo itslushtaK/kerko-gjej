@@ -14,7 +14,7 @@ app.use(
     origin: [
       "https://kerko-gjej.vercel.app",
       "https://kerko-gjej-q40wtwxqn-gentuar-lushtakus-projects.vercel.app",
-    ],
+    ], // Allow requests from your frontend
   })
 );
 
