@@ -55,9 +55,10 @@ router.post("/add", auth, async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    res
-      .status(201)
-      .json({ msg: "Lost item added successfully, awaiting approval." });
+   res.status(201).json({
+  msg: "Lost item added successfully, awaiting approval.",
+  redirectUrl: "https://kerko-gjej.vercel.app/item-approved",
+});
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
