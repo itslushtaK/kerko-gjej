@@ -16,7 +16,10 @@ app.use(
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
@@ -29,6 +32,9 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ msg: "An unexpected error occurred" });
 });
+
+const uploadRoutes = require("./routes/upload");
+app.use("/api/upload", uploadRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
