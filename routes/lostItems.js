@@ -49,7 +49,7 @@ router.post("/add", auth, async (req, res) => {
         <p><strong>Phone Number:</strong> ${phoneNumber}</p>
         <p><strong>User ID:</strong> ${req.userId}</p>
         <p>Please review and approve the submission by clicking the link below:</p>
-        <p><a href="https://kerko-gjej.vercel.app/api/lost-items/approve/${newLostItem._id}">Approve Lost Item</a></p>
+        <p><a href="http://localhost:5000/api/lost-items/approve/${newLostItem._id}">Approve Lost Item</a></p>
       `,
     };
 
@@ -85,7 +85,7 @@ router.get("/my-items", auth, async (req, res) => {
     const userLostItems = await LostItem.find({ userId: req.userId });
 
     res.status(200).json(userLostItems);
-  } catch (error) 
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
