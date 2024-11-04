@@ -26,45 +26,44 @@ router.post("/add", auth, async (req, res) => {
     const newLostItem = new LostItem({
       name,
       description,
-      datePosted,
-      image,
+      datePosted: datePosted || new Date(),
+      image, // This should be a URL or a string representing the image
       phoneNumber,
       userId: req.userId,
-      isApproved: false,
+      approved: false,
     });
 
     await newLostItem.save();
 
     // Prepare email to admin
-   // Prepare email to admin
-const mailOptions = {
-  from: process.env.EMAIL_USER,
-  to: process.env.ADMIN_EMAIL,
-  subject: "New Lost Item Submission Awaiting Approval",
-  html: `
-    <h3>New Lost Item Submitted</h3>
-    <p><strong>Name:</strong> ${name}</p>
-    <p><strong>Description:</strong> ${description}</p>
-    <p><strong>Date Posted:</strong> ${datePosted}</p>
-    <p><strong>Image:</strong> <img src="${image}" alt="${name}" width="200"/></p>
-    <p><strong>Phone Number:</strong> ${phoneNumber}</p>
-    <p><strong>User ID:</strong> ${req.userId}</p>
-    <p>Please review and approve the submission by clicking the link below:</p>
-    <p><a href="https://kerko-gjej.vercel.app/item-approved/${newLostItem._id}">Approve Lost Item</a></p>
-  `,
-};
-
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.ADMIN_EMAIL,
+      subject: "New Lost Item Submission Awaiting Approval",
+      html: `
+        <h3>New Lost Item Submitted</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Description:</strong> ${description}</p>
+        <p><strong>Date Posted:</strong> ${new Date().toLocaleDateString()}</p>
+        ${image ? `<p><strong>Image:</strong> <img src="${image}" alt="${name}" width="200"/></p>` : ""}
+        <p><strong>Phone Number:</strong> ${phoneNumber}</p>
+        <p><strong>User ID:</strong> ${req.userId}</p>
+        <p>Please review and approve the submission by clicking the link below:</p>
+        <p><a href="https://kerko-gjej.vercel.app/item-approved/${newLostItem._id}">Approve Lost Item</a></p>
+      `,
+    };
 
     await transporter.sendMail(mailOptions);
 
-   res.status(201).json({
-  msg: "Lost item added successfully, awaiting approval.",
-  redirectUrl: "https://kerko-gjej.vercel.app/item-approved",
-});
+    res.status(201).json({
+      msg: "Lost item added successfully, awaiting approval.",
+      redirectUrl: "https://kerko-gjej.vercel.app/item-approved",
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Approve lost item route
 // Approve lost item route
