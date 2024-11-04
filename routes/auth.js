@@ -11,10 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      "https://kerko-gjej.vercel.app",
-      "https://kerko-gjej-q40wtwxqn-gentuar-lushtakus-projects.vercel.app",
-    ], // Allow requests from your frontend
+    origin: "https://kerko-gjej.vercel.app", // Allow requests from your frontend
   })
 );
 
