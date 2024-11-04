@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(
   cors({
     origin:["https://kerko-gjej.vercel.app",
-          "http://localhost:3000", // Allow requests from your frontend
+          "http://localhost:3000",] // Allow requests from your frontend
   })
 );
 
