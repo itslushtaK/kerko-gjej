@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "kerko-gjej-production.up.railway.app", // Allow requests from your frontend
+    origin: "https://kerko-gjej-production.up.railway.app", // Allow requests from your frontend
   })
 );
 
