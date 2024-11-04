@@ -76,7 +76,8 @@ router.get("/approve/:id", async (req, res) => {
     await lostItem.save();
 
     // Send a success response
-    res.status(200).json({ msg: "Item approved successfully." });
+    res.redirect("https://kerko-gjej.vercel.app/item-approved");
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
