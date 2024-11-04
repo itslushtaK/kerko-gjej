@@ -49,7 +49,7 @@ router.post("/add", auth, async (req, res) => {
         <p><strong>Phone Number:</strong> ${phoneNumber}</p>
         <p><strong>User ID:</strong> ${req.userId}</p>
         <p>Please review and approve the submission by clicking the link below:</p>
-        <p><a href="https://kerko-gjej.vercel.app/item-approved/${newLostItem._id}">Approve Lost Item</a></p>
+        <p><a href="https://kerko-gjej.vercel.app/approve-item/${newLostItem._id}">Approve Lost Item</a></p>
       `,
     };
 
@@ -65,8 +65,7 @@ router.post("/add", auth, async (req, res) => {
 });
 
 
-// Approve lost item route
-// Approve lost item route
+
 // Approve lost item route
 router.get("/approve/:id", async (req, res) => {
   try {
@@ -76,12 +75,13 @@ router.get("/approve/:id", async (req, res) => {
     lostItem.approved = true; // Set approval status to true
     await lostItem.save();
 
-    // Redirect with a success message as a query parameter
-    res.redirect(`https://kerko-gjej.vercel.app/item-approved?message=Item%20approved%20successfully`);
+    // Send a success response instead of redirecting
+    res.status(200).json({ msg: "Item approved successfully." });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 
 
