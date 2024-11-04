@@ -49,7 +49,7 @@ router.post("/add", auth, async (req, res) => {
         <p><strong>Phone Number:</strong> ${phoneNumber}</p>
         <p><strong>User ID:</strong> ${req.userId}</p>
         <p>Please review and approve the submission by clicking the link below:</p>
-        <p><a href="https://kerko-gjej.vercel.app/approve-item/${newLostItem._id}">Approve Lost Item</a></p>
+        <p><a href="https://kerko-gjej-production.up.railway.app/api/lost-items/approve/${newLostItem._id}">Approve Lost Item</a></p>
       `,
     };
 
@@ -65,25 +65,22 @@ router.post("/add", auth, async (req, res) => {
 });
 
 
-
 // Approve lost item route
 router.get("/approve/:id", async (req, res) => {
   try {
     const lostItem = await LostItem.findById(req.params.id);
     if (!lostItem) return res.status(404).json({ msg: "Lost item not found." });
 
-    lostItem.approved = true; // Set approval status to true
+    // Set approval status to true
+    lostItem.approved = true; 
     await lostItem.save();
 
-    // Send a success response instead of redirecting
+    // Send a success response
     res.status(200).json({ msg: "Item approved successfully." });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
-
-
 
 // Get my lost items route
 router.get("/my-items", auth, async (req, res) => {
