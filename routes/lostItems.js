@@ -1,6 +1,6 @@
-// routes/lostItems.js
 const express = require("express");
 const LostItem = require("../models/LostItem");
+const User = require("../models/User"); // Ensure you have this model to fetch user email
 const auth = require("../middleware/auth");
 const nodemailer = require("nodemailer");
 
@@ -27,7 +27,7 @@ router.post("/add", auth, async (req, res) => {
       name,
       description,
       datePosted: datePosted || new Date(),
-      image, // This should be a URL or a string representing the image
+      image,
       phoneNumber,
       userId: req.userId,
       approved: false,
@@ -64,18 +64,38 @@ router.post("/add", auth, async (req, res) => {
   }
 });
 
-
-// Approve lost item route
+// Approve lost item route and notify user by email
 router.get("/approve/:id", async (req, res) => {
   try {
-    const lostItem = await LostItem.findById(req.params.id);
+    // Find the lost item by ID and populate user details
+    const lostItem = await LostItem.findById(req.params.id).populate("userId");
     if (!lostItem) return res.status(404).json({ msg: "Lost item not found." });
 
+    // Check if already approved
+    if (lostItem.approved) return res.status(400).json({ msg: "Item is already approved." });
+
     // Set approval status to true
-    lostItem.approved = true; 
+    lostItem.approved = true;
     await lostItem.save();
 
-    // Send a success response
+    // Send an email to the item author notifying about the approval
+    const user = lostItem.userId; // User details from populated userId
+    if (user && user.email) {
+      const approvalEmailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Your Lost Item Post has been Approved",
+        html: `
+          <h3>Congratulations!</h3>
+          <p>Your post titled "<strong>${lostItem.name}</strong>" has been approved by the admin and is now visible to others.</p>
+          <p><a href="https://kerko-gjej.vercel.app/lost-items/${lostItem._id}">View your post</a></p>
+          <p>Thank you for using Kerko & Gjej to help others find lost items!</p>
+        `,
+      };
+
+      await transporter.sendMail(approvalEmailOptions);
+    }
+
     res.redirect("https://kerko-gjej.vercel.app/item-approved");
 
   } catch (error) {
@@ -86,15 +106,14 @@ router.get("/approve/:id", async (req, res) => {
 // Get my lost items route
 router.get("/my-items", auth, async (req, res) => {
   try {
-    // Find lost items associated with the logged-in user's ID
     const userLostItems = await LostItem.find({ userId: req.userId });
-
     res.status(200).json(userLostItems);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
+// Get lost item by ID
 router.get("/lost-items/:id", async (req, res) => {
   try {
     const lostItem = await LostItem.findById(req.params.id);
@@ -110,11 +129,9 @@ router.get("/lost-items/:id", async (req, res) => {
 // Get all lost items route
 router.get("/lost-items", async (req, res) => {
   try {
-    const lostItems = await LostItem.find({ approved: true }) // Fetch all approved lost items
-      .sort({ createdAt: -1 }); // Sort by createdAt in descending order (newest first)
+    const lostItems = await LostItem.find({ approved: true }).sort({ createdAt: -1 });
     res.status(200).json(lostItems);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ msg: "Error retrieving lost items." });
   }
 });
@@ -124,26 +141,19 @@ router.delete("/delete/:id", auth, async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Find the lost item by ID
     const lostItem = await LostItem.findById(id);
-
-    // Check if the item exists and belongs to the logged-in user
     if (!lostItem) {
       return res.status(404).json({ msg: "Lost item not found." });
     }
     if (lostItem.userId.toString() !== req.userId) {
-      return res
-        .status(403)
-        .json({ msg: "Not authorized to delete this item." });
+      return res.status(403).json({ msg: "Not authorized to delete this item." });
     }
 
-    // Delete the lost item
-    await lostItem.deleteOne(); // Use deleteOne instead of remove
+    await lostItem.deleteOne();
     res.status(200).json({ msg: "Lost item deleted successfully." });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Export the router
 module.exports = router;
