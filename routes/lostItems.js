@@ -26,11 +26,12 @@ router.post("/add", auth, async (req, res) => {
     const newLostItem = new LostItem({
       name,
       description,
-      datePosted: datePosted || new Date(),
-      image, // This should be a URL or a string representing the image
+      datePosted,
+      image,
       phoneNumber,
       userId: req.userId,
-      approved: false,
+      userEmail: req.userEmail, // Assuming userEmail is provided in the auth middleware
+      isApproved: false,
     });
 
     await newLostItem.save();
@@ -44,12 +45,12 @@ router.post("/add", auth, async (req, res) => {
         <h3>New Lost Item Submitted</h3>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Description:</strong> ${description}</p>
-        <p><strong>Date Posted:</strong> ${new Date().toLocaleDateString()}</p>
-        ${image ? `<p><strong>Image:</strong> <img src="${image}" alt="${name}" width="200"/></p>` : ""}
+        <p><strong>Date Posted:</strong> ${datePosted}</p>
+        <p><strong>Image:</strong> <img src="${image}" alt="${name}" width="200"/></p>
         <p><strong>Phone Number:</strong> ${phoneNumber}</p>
         <p><strong>User ID:</strong> ${req.userId}</p>
         <p>Please review and approve the submission by clicking the link below:</p>
-        <p><a href="https://kerko-gjej-production.up.railway.app/api/lost-items/approve/${newLostItem._id}">Approve Lost Item</a></p>
+        <p><a href="https://kerko-gjej.vercel.app/item-approved/${newLostItem._id}">Approve Lost Item</a></p>
       `,
     };
 
@@ -64,20 +65,35 @@ router.post("/add", auth, async (req, res) => {
   }
 });
 
-
 // Approve lost item route
 router.get("/approve/:id", async (req, res) => {
   try {
     const lostItem = await LostItem.findById(req.params.id);
     if (!lostItem) return res.status(404).json({ msg: "Lost item not found." });
 
-    // Set approval status to true
-    lostItem.approved = true; 
+    // Set the item's approval status to true
+    lostItem.isApproved = true;
     await lostItem.save();
 
-    // Send a success response
-    res.redirect("https://kerko-gjej.vercel.app/item-approved");
+    // Prepare email for the post author
+    const authorEmail = lostItem.userEmail; // Ensure this field is populated correctly
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: authorEmail,
+      subject: "Your Lost Item Post Has Been Approved",
+      html: `
+        <h3>Good News!</h3>
+        <p>Your post titled "<strong>${lostItem.name}</strong>" has been approved by the admin.</p>
+        <p>It is now visible on the Lost & Found platform. Thank you for contributing!</p>
+        <p><a href="https://kerko-gjej.vercel.app/lost-items/${lostItem._id}">View Your Post</a></p>
+      `,
+    };
 
+    // Send the email notification to the author
+    await transporter.sendMail(mailOptions);
+
+    // Redirect to the frontend confirmation page
+    res.redirect("https://kerko-gjej.vercel.app/item-approved");
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -95,6 +111,7 @@ router.get("/my-items", auth, async (req, res) => {
   }
 });
 
+// Get a lost item by ID
 router.get("/lost-items/:id", async (req, res) => {
   try {
     const lostItem = await LostItem.findById(req.params.id);
@@ -110,7 +127,7 @@ router.get("/lost-items/:id", async (req, res) => {
 // Get all lost items route
 router.get("/lost-items", async (req, res) => {
   try {
-    const lostItems = await LostItem.find({ approved: true }) // Fetch all approved lost items
+    const lostItems = await LostItem.find({ isApproved: true }) // Fetch all approved lost items
       .sort({ createdAt: -1 }); // Sort by createdAt in descending order (newest first)
     res.status(200).json(lostItems);
   } catch (error) {
