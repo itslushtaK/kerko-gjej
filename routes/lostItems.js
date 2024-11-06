@@ -88,7 +88,7 @@ router.get("/approve/:id", async (req, res) => {
         html: `
           <h3>Congratulations!</h3>
           <p>Your post titled "<strong>${lostItem.name}</strong>" has been approved by the admin and is now visible to others.</p>
-          <p><a href="https://kerko-gjej.vercel.app/lost-items/${lostItem._id}">View your post</a></p>
+          <p><a href="https://kerko-gjej.vercel.app/lost-items/">View your post</a></p>
           <p>Thank you for using Kerko & Gjej to help others find lost items!</p>
         `,
       };
